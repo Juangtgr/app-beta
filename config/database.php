@@ -40,6 +40,7 @@
     }
 
     //Supabase connection
+    /*
     $supa_conn = pg_connect($supa_data_connection);
 
     if(!$supa_conn){
@@ -48,4 +49,5 @@
     }else{
         echo "<br>Supabase succes connection !!!";
     }
+        */
 ?>
