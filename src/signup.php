@@ -7,10 +7,11 @@
      $e_mail = $_POST ['email'];
      $m_phone = $_POST ['mphone'];
      $p_sswd = $_POST ['passwd'];
+     $enc_pass = md5($p_sswd);
 
      //Query to insert into SQL
      $sql = "insert into users(firstname, lastname, email, mobile_phone, password)
-               values('$f_name','$l_name','$e_mail','$m_phone','$p_sswd')";
+               values('$f_name','$l_name','$e_mail','$m_phone','$enc_pass')";
 
      //Execute query
      pg_query($sql);
