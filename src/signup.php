@@ -1,17 +1,52 @@
 <?php
-     include('../config/database.php');
+include('../config/database.php');
 
-     //Get data
-     $f_name = $_POST ['fname'];
-     $l_name = $_POST ['lname'];
-     $e_mail = $_POST ['email'];
-     $m_phone = $_POST ['mphone'];
-     $p_sswd = $_POST ['passwd'];
-     $enc_pass = md5($p_sswd);
+// Bloquear acceso directo sin formulario
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    die("Acceso no permitido. Use el formulario.");
+}
 
-     //Query to insert into SQL
-     $sql = "insert into users(firstname, lastname, email, mobile_phone, password)
-               values('$f_name','$l_name','$e_mail','$m_phone','$enc_pass')";
+// Get data
+$f_name  = $_POST['fname']  ?? '';
+$l_name  = $_POST['lname']  ?? '';
+$e_mail  = $_POST['email']  ?? '';
+$m_phone = $_POST['mphone'] ?? '';
+$p_sswd  = $_POST['passwd'] ?? '';
 
-     //Execute query
-     pg_query($sql);
+// FEATURE 4 — Hash seguro con bcrypt
+$enc_pass = password_hash($p_sswd, PASSWORD_BCRYPT);
+
+// FEATURE 1 — Validar email único ANTES de insertar
+$check_email = "SELECT email FROM users WHERE email = '$e_mail'";
+$res_email = pg_query($local_conn, $check_email);
+
+if (pg_num_rows($res_email) > 0) {
+    echo "Error: El correo electrónico '$e_mail' ya está registrado. Por favor, use uno diferente.";
+    exit();
+}
+
+// FEATURE 2 — Validar teléfono único ANTES de insertar
+$check_phone = "SELECT mobile_phone FROM users WHERE mobile_phone = '$m_phone'";
+$res_phone = pg_query($local_conn, $check_phone);
+
+if (pg_num_rows($res_phone) > 0) {
+    echo "Error: El número de celular '$m_phone' ya está registrado en nuestro sistema.";
+    exit();
+}
+
+// FEATURE 3 — INSERT atómico en local y Supabase
+$sql = "INSERT INTO users(firstname, lastname, email, mobile_phone, password)
+        VALUES('$f_name','$l_name','$e_mail','$m_phone','$enc_pass')";
+
+$res_local = pg_query($local_conn, $sql);
+if ($res_local) {
+    $res_supa = pg_query($supa_conn, $sql);
+    if ($res_supa) {
+        echo "¡Listo! Guardado en ambos lados.";
+    } else {
+        echo "Error: Se guardó en local pero no en la nube.";
+    }
+} else {
+    echo "Error: No se pudo guardar ni en local.";
+}
+?>
