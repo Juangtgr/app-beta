@@ -9,9 +9,11 @@ $f_name  = $_POST['fname']  ?? '';
 $l_name  = $_POST['lname']  ?? '';
 $e_mail  = $_POST['email']  ?? '';
 $m_phone = $_POST['mphone'] ?? '';
-$p_sswd  = $_POST['passwd'] ?? '';
+$p_asswd  = $_POST['passwd'] ?? '';
 
-$enc_pass = password_hash($p_sswd, PASSWORD_BCRYPT);
+//$enc_pass = password_hash($p_sswd, PASSWORD_BCRYPT);
+     $enc_pass = md5($p_asswd);
+
 
 $check_email = "SELECT email FROM users WHERE email = '$e_mail'";
 $res_email = pg_query($local_conn, $check_email);
